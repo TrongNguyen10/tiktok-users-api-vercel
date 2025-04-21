@@ -1,11 +1,6 @@
 // See https://github.com/typicode/json-server#module
 const jsonServer = require('json-server')
-// const cors = require('cors')
-// const corsOptions = {
-//     origin: 'http://localhost:3000',
-//     credentials: true, //access-control-allow-credentials:true
-//     optionSuccessStatus: 200,
-// }
+
 const server = jsonServer.create()
 
 // Uncomment to allow write operations
@@ -21,9 +16,27 @@ const router = jsonServer.router(db)
 
 const middlewares = jsonServer.defaults()
 
-// server.use(cors(corsOptions))
-
 server.use(middlewares)
+
+// CORS middleware – hỗ trợ cả local + Netlify
+server.use((req, res, next) => {
+    const allowedOrigins = ['http://localhost:3000', 'https://ndt-tiktokui.netlify.app/']
+    const origin = req.headers.origin
+
+    if (allowedOrigins.includes(origin)) {
+        res.setHeader('Access-Control-Allow-Origin', origin)
+    }
+
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS')
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
+
+    if (req.method === 'OPTIONS') {
+        return res.status(200).end()
+    }
+
+    next()
+})
+
 // Add this before server.use(router)
 server.use(
     jsonServer.rewriter({
